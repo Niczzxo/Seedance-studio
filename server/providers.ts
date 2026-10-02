@@ -11,7 +11,7 @@
  * provider — it is not free or unlimited.
  */
 
-export type ProviderId = 'openrouter' | 'byteplus';
+export type ProviderId = 'openrouter' | 'byteplus' | 'apiframe';
 
 export interface ProviderConfig {
   provider: ProviderId;
@@ -42,6 +42,8 @@ export interface StatusResult {
 const OPENROUTER_DEFAULT_MODEL = 'bytedance/seedance-2.0';
 const BYTEPLUS_DEFAULT_MODEL = 'dreamina-seedance-2-0-260128';
 const BYTEPLUS_DEFAULT_BASE = 'https://ark.ap-southeast.bytepluses.com/api/v3';
+const APIFRAME_DEFAULT_MODEL = 'seedance-2.5';
+const APIFRAME_DEFAULT_BASE = 'https://api.apiframe.ai/v2';
 
 async function readJsonSafe(res: Response): Promise<any> {
   try {
@@ -56,6 +58,33 @@ export async function submitGeneration(
   input: GenerationInput
 ): Promise<SubmitResult> {
   if (!cfg.apiKey) throw new Error('API key is missing. Add it in Settings.');
+
+  // Apiframe — third-party gateway with a documented Seedance 2.5 endpoint
+  // (4–30s single-pass clips, native synced audio).
+  if (cfg.provider === 'apiframe') {
+    const base = (cfg.baseUrl || APIFRAME_DEFAULT_BASE).replace(/\/$/, '');
+    const res = await fetch(`${base}/videos/generate`, {
+      method: 'POST',
+      headers: { 'X-API-Key': cfg.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: cfg.model || APIFRAME_DEFAULT_MODEL,
+        prompt: input.prompt,
+        seedanceParams: {
+          duration: Math.min(30, Math.max(4, input.duration)),
+          resolution: '720p',
+          aspect_ratio: input.aspectRatio,
+          generate_audio: true,
+        },
+      }),
+    });
+    const data = await readJsonSafe(res);
+    if (!res.ok) {
+      throw new Error(data?.error?.message || data?.message || `Apiframe error ${res.status}`);
+    }
+    const jobId: string | undefined = data.jobId || data.job_id || data.id;
+    if (!jobId) throw new Error('Apiframe did not return a job id.');
+    return { providerTaskId: jobId };
+  }
 
   if (cfg.provider === 'openrouter') {
     const res = await fetch('https://openrouter.ai/api/v1/videos', {
@@ -115,6 +144,29 @@ export async function checkGenerationStatus(
   cfg: ProviderConfig,
   task: SubmitResult
 ): Promise<StatusResult> {
+  if (cfg.provider === 'apiframe') {
+    const base = (cfg.baseUrl || APIFRAME_DEFAULT_BASE).replace(/\/$/, '');
+    const res = await fetch(`${base}/jobs/${task.providerTaskId}`, {
+      headers: { 'X-API-Key': cfg.apiKey },
+    });
+    const data = await readJsonSafe(res);
+    if (!res.ok) {
+      throw new Error(data?.error?.message || `Apiframe poll error ${res.status}`);
+    }
+    const status = String(data.status || '').toUpperCase();
+    if (status === 'COMPLETED') {
+      const r = data.result;
+      const videoUrl: string | undefined =
+        r?.videoUrl || r?.url || (typeof r === 'string' ? r : undefined) || data.videoUrl;
+      if (!videoUrl) return { status: 'failed', error: 'Completed but no video URL returned.' };
+      return { status: 'completed', videoUrl };
+    }
+    if (status === 'FAILED' || status === 'CANCELLED') {
+      return { status: 'failed', error: data.error?.message || data.message || 'Generation failed.' };
+    }
+    return { status: 'processing' };
+  }
+
   if (cfg.provider === 'openrouter') {
     const url = task.pollUrl || `https://openrouter.ai/api/v1/videos/${task.providerTaskId}`;
     const res = await fetch(url, {
@@ -170,11 +222,14 @@ export function resolveConfig(req: {
     const v = req.headers[name];
     return Array.isArray(v) ? v[0] : v;
   };
-  const provider = (h('x-seedance-provider') as ProviderId) || 'openrouter';
-  const apiKey =
-    h('x-seedance-key') ||
-    (provider === 'openrouter' ? process.env.OPENROUTER_API_KEY : process.env.ARK_API_KEY) ||
-    '';
+  const provider = (h('x-seedance-provider') as ProviderId) || 'apiframe';
+  const envKey =
+    provider === 'openrouter'
+      ? process.env.OPENROUTER_API_KEY
+      : provider === 'byteplus'
+        ? process.env.ARK_API_KEY
+        : process.env.APIFRAME_API_KEY;
+  const apiKey = h('x-seedance-key') || envKey || '';
   return {
     provider,
     apiKey,

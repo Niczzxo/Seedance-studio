@@ -53,7 +53,7 @@ export async function createJob(
     prompt: input.prompt,
     duration: input.duration,
     aspectRatio: input.aspectRatio,
-    model: cfg.model || (cfg.provider === 'openrouter' ? 'bytedance/seedance-2.0' : 'dreamina-seedance-2-0-260128'),
+    model: cfg.model || (cfg.provider === 'apiframe' ? 'seedance-2.5' : cfg.provider === 'openrouter' ? 'bytedance/seedance-2.0' : 'dreamina-seedance-2-0-260128'),
     provider: cfg.provider,
     status: 'processing',
     createdAt: now,

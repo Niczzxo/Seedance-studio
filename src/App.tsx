@@ -152,9 +152,9 @@ export default function App() {
       <div className="mx-4 md:mx-8 mt-4 flex gap-3 items-start bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
         <AlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
         <p className="text-xs text-amber-200/80 leading-relaxed">
-          This studio calls the <b>official Seedance APIs</b> (OpenRouter / BytePlus). Generation is
-          billed by the provider — it is not free or unlimited. Add your own API key in Settings.
-          There is no public API for Dola AI's Seedance 2.5 web app.
+          This studio calls the <b>official Seedance APIs</b> (Apiframe Seedance 2.5, OpenRouter,
+          BytePlus). Generation is billed by the provider — it is not free or unlimited. Add your
+          own API key in Settings.
         </p>
       </div>
 
@@ -393,7 +393,7 @@ function SettingsModal({ initial, onClose, onSave }: {
           </select>
         </div>
 
-        {form.provider === 'byteplus' && (
+        {(form.provider === 'byteplus' || form.provider === 'apiframe') && (
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Base URL (optional)</label>
             <input value={form.baseUrl} onChange={(e) => set('baseUrl', e.target.value)}

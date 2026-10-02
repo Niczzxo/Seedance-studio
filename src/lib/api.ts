@@ -1,4 +1,4 @@
-export type ProviderId = 'openrouter' | 'byteplus';
+export type ProviderId = 'openrouter' | 'byteplus' | 'apiframe';
 
 export interface StudioSettings {
   provider: ProviderId;
@@ -10,7 +10,7 @@ export interface StudioSettings {
 const LS_KEY = 'seedance-studio-settings';
 
 export const DEFAULT_SETTINGS: StudioSettings = {
-  provider: 'openrouter',
+  provider: 'apiframe',
   apiKey: '',
   baseUrl: '',
   model: '',
@@ -78,6 +78,17 @@ export const api = {
 };
 
 export const PROVIDER_MODELS: Record<ProviderId, { label: string; models: { id: string; label: string }[]; baseUrlHint: string }> = {
+  apiframe: {
+    label: 'Apiframe — Seedance 2.5',
+    baseUrlHint: 'Default: https://api.apiframe.ai/v2',
+    models: [
+      { id: '', label: 'Default (seedance-2.5 — up to 30s, native audio)' },
+      { id: 'seedance-2.5', label: 'seedance-2.5' },
+      { id: 'seedance-2', label: 'seedance-2' },
+      { id: 'seedance-2-fast', label: 'seedance-2-fast' },
+      { id: 'seedance-2-mini', label: 'seedance-2-mini' },
+    ],
+  },
   openrouter: {
     label: 'OpenRouter',
     baseUrlHint: 'https://openrouter.ai/api/v1 (fixed)',
@@ -91,6 +102,7 @@ export const PROVIDER_MODELS: Record<ProviderId, { label: string; models: { id: 
     baseUrlHint: 'Default: https://ark.ap-southeast.bytepluses.com/api/v3 (intl). China: https://ark.cn-beijing.volces.com/api/v3',
     models: [
       { id: '', label: 'Default (dreamina-seedance-2-0-260128)' },
+      { id: 'dreamina-seedance-2-5', label: 'dreamina-seedance-2-5 (2.5 — needs console activation)' },
       { id: 'dreamina-seedance-2-0-260128', label: 'dreamina-seedance-2-0-260128 (intl)' },
       { id: 'dreamina-seedance-2-0-fast-260128', label: 'dreamina-seedance-2-0-fast-260128 (intl, fast)' },
       { id: 'doubao-seedance-1-5-pro-251215', label: 'doubao-seedance-1-5-pro-251215' },

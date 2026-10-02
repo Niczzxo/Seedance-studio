@@ -7,12 +7,14 @@ live activity log, video gallery with preview + download.
 ## Honest notes
 
 - **There is no "unlimited free" tier.** This app calls the **official paid APIs**.
-  Generation is billed by the provider (e.g. roughly $0.14 / 15s clip on BytePlus).
-  You must add **your own API key** in the in-app Settings.
-- **Seedance 2.5** (as offered inside the Dola AI web app) has **no public API**,
-  so this studio integrates the official model APIs instead:
-  - **OpenRouter** — `bytedance/seedance-2.0` (global, easiest)
-  - **BytePlus ModelArk** (international) / **Volcengine ARK** (China)
+  Generation is billed by the provider. You must add **your own API key** in the
+  in-app Settings.
+- **Seedance 2.5** is supported via:
+  - **Apiframe** (default) — documented `seedance-2.5` endpoint, 4–30s single-pass
+    clips with native synced audio. Get a key at apiframe.ai.
+  - **BytePlus ModelArk** — model id `dreamina-seedance-2-5` (must be activated in
+    the Ark console; spec still rolling out).
+  - **Volcengine ARK** (China) — model id `doubao-seedance-2-5`.
 - This project does **not** automate third-party web UIs, rotate accounts, or
   farm free credits. Use your own API key within the provider's terms.
 
