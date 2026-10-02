@@ -382,7 +382,23 @@ function SettingsModal({ initial, onClose, onSave }: {
           </label>
           <input type="password" value={form.apiKey} onChange={(e) => set('apiKey', e.target.value)}
             placeholder="Paste your API key…" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 font-mono" />
-          <p className="text-[11px] text-zinc-600 ml-1">Stored only in your browser (localStorage). Never sent anywhere except the provider API.</p>
+          <p className="text-[11px] text-zinc-600 ml-1">
+            Stored only in your browser (localStorage). Never sent anywhere except the provider API.{' '}
+            <a
+              href={
+                form.provider === 'apiframe'
+                  ? 'https://apiframe.ai'
+                  : form.provider === 'openrouter'
+                    ? 'https://openrouter.ai/keys'
+                    : 'https://console.byteplus.com/ark'
+              }
+              target="_blank"
+              rel="noreferrer"
+              className="text-orange-300 hover:text-orange-200 font-bold underline underline-offset-2"
+            >
+              Get an API key →
+            </a>
+          </p>
         </div>
 
         <div className="space-y-1.5">
